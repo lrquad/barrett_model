@@ -1,8 +1,126 @@
 <robot name="wam"
   xmlns:xacro="http://www.ros.org/wiki/xacro">
 
+  <material name="black">
+    <color rgba="0.0 0.0 0.0 1.0"/>
+  </material>
+
+  <material name="blue">
+    <color rgba="0.0 0.0 0.8 1.0"/>
+  </material>
+
+  <material name="green">
+    <color rgba="0.0 0.8 0.0 1.0"/>
+  </material>
+
+  <material name="grey">
+    <color rgba="0.2 0.2 0.2 1.0"/>
+  </material>
+
+  <material name="orange">
+    <color rgba="${255/255} ${108/255} ${10/255} 1.0"/>
+  </material>
+
+  <material name="brown">
+    <color rgba="${222/255} ${207/255} ${195/255} 1.0"/>
+  </material>
+
+  <material name="red">
+    <color rgba="0.8 0.0 0.0 1.0"/>
+  </material>
+
+  <material name="white">
+    <color rgba="1.0 1.0 1.0 1.0"/>
+  </material>
+
   <!-- Includea all the WAM stuff -->
   <include filename="$(find barrett_model)/models/wam_top.urdf.xacro"/>
+
+  <xacro:property name="PI" value="3.1415926535897931"/>
+  <xacro:property name="mass" value="1" /> <!-- arbitrary value for mass -->
+  <xacro:property name="width" value="0.1" /> <!-- Square dimensions (widthxwidth) of beams -->
+  <xacro:property name="height1" value="2" /> <!-- Link 1 -->
+  <xacro:property name="height2" value="1" /> <!-- Link 2 -->
+  <xacro:property name="height3" value="1" /> <!-- Link 3 -->
+  <xacro:property name="camera_link" value="0.01" /> <!-- Size of square 'camera' box -->
+  <xacro:property name="axel_offset" value="0.05" /> <!-- Space btw top of beam and the each joint -->
+  <xacro:include filename="$(find barrett_model)/robots/wam.gazebo" />
+  
+
+  <joint name="hokuyo_joint" type="fixed">
+    <axis xyz="0 1 0" />
+    <origin xyz="0 0 0.05" rpy="0 0 0"/>
+    <parent link="wam/bhand/bhand_palm_link"/>
+    <child link="hokuyo_link"/>
+  </joint>
+
+  <!-- Hokuyo Laser -->
+  <link name="hokuyo_link">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+	<box size="0.1 0.1 0.1"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://rrbot_description/meshes/hokuyo.dae"/>
+      </geometry>
+    </visual>
+
+    <inertial>
+      <mass value="1e-5" />
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+    </inertial>
+  </link>
+
+
+  <joint name="camera_joint" type="fixed">
+    <axis xyz="0 1 0" />
+    <origin xyz="0 -0.05 0.09" rpy="0 0 0"/>
+    <parent link="wam/bhand/bhand_palm_link"/>
+    <child link="camera_link"/>
+  </joint>
+
+  <link name="camera_link">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+	    <box size="${camera_link} ${camera_link} ${camera_link}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+	      <box size="${camera_link} ${camera_link} ${camera_link}"/>
+      </geometry>
+      <material name="red"/>
+    </visual>
+
+    <inertial>
+      <mass value="1e-5" />
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+    </inertial>
+  </link>
+
+  <joint name="camera_optical_joint" type="fixed">
+    <!-- these values have to be these values otherwise the gazebo camera image
+        won't be aligned properly with the frame it is supposedly originating from -->
+    <origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}"/>
+    <parent link="camera_link"/>
+    <child link="camera_link_optical"/>
+  </joint>
+
+  <link name="camera_link_optical">
+  </link>
+
+
+
 
   <!-- Root link is in the world frame-->
   <link name = "world"/>
